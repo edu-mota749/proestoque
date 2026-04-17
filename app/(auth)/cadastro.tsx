@@ -9,10 +9,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
+import LogoProEstoque from "@/src/components/LogoProEstoque";
 import { Colors, Typography, Spacing } from "@/src/constants/theme";
 
 type FormFields = {
@@ -60,9 +60,7 @@ export default function CadastroScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <View style={styles.iconWrapper}>
-              <Ionicons name="cube" size={24} color={Colors.primary[600]} />
-            </View>
+            <LogoProEstoque size="lg" />
             <Text style={styles.title}>Criar conta</Text>
             <Text style={styles.description}>Preencha seus dados para começar a usar o ProEstoque.</Text>
           </View>

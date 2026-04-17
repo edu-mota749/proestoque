@@ -10,10 +10,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
+import LogoProEstoque from "@/src/components/LogoProEstoque";
 import { Colors, Spacing, Typography } from "@/src/constants/theme";
 
 export default function LoginScreen() {
@@ -26,10 +26,7 @@ export default function LoginScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
             <View style={styles.header}>
-              <View style={styles.iconWrapper}>
-                <Ionicons name="cube" size={24} color={Colors.primary[600]} />
-              </View>
-              <Text style={styles.brand}>ProEstoque</Text>
+              <LogoProEstoque size="lg" variant="onPrimary" />
               <Text style={styles.headerText}>Bem-vindo de volta</Text>
             </View>
 

@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
+import LogoProEstoque from "@/src/components/LogoProEstoque";
 import { Colors, Typography, Spacing } from "@/src/constants/theme";
 
 export default function RecuperarSenhaScreen() {
@@ -30,9 +31,7 @@ export default function RecuperarSenhaScreen() {
             </TouchableOpacity>
 
             <View style={styles.header}>
-              <View style={styles.iconWrapper}>
-                <Ionicons name="lock-closed" size={24} color={Colors.primary[600]} />
-              </View>
+              <LogoProEstoque size="md" />
               <Text style={styles.title}>Recuperar senha</Text>
               <Text style={styles.description}>Informe seu e-mail e enviaremos um link de recuperação.</Text>
             </View>
