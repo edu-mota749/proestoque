@@ -1,7 +1,6 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
 const MAPPING = {
@@ -9,6 +8,7 @@ const MAPPING = {
   settings: 'settings',
   logout: 'logout',
   'paperplane.fill': 'send',
+  'shippingbox.fill': 'inventory-2',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as const;

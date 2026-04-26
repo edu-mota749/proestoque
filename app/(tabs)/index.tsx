@@ -8,8 +8,9 @@ import {
   type Produto,
 } from "@/src/data/mockData";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type CardResumo = {
   id: string;
@@ -117,17 +118,24 @@ export default function HomeScreen() {
 
   const DashboardHeader = () => (
     <View style={styles.headerContent}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Olá, Eduardo 👋</Text>
-        <Text style={styles.subtitle}>{formatarDataHoje()}</Text>
+      <View style={styles.headerCard}>
+        <View style={styles.greetingRow}>
+          <Text style={styles.greeting}>Olá, Eduardo</Text>
+        </View>
+
+        <Text style={styles.subtitle}>Visão geral do estoque</Text>
+        <Text style={styles.headerDate}>{formatarDataHoje()}</Text>
       </View>
 
       <View style={styles.cardsGrid}>
         {cardsResumo.map((card) => (
           <View key={card.id} style={styles.cardResumo}>
-            <Ionicons name={card.icone} size={20} color={card.corIcone} />
+            <View style={styles.cardTopRow}>
+              <Ionicons name={card.icone} size={18} color={card.corIcone} />
+              <Text style={styles.cardDash}>-</Text>
+              <Text style={styles.cardTitulo}>{card.titulo}</Text>
+            </View>
             <Text style={styles.cardValor}>{card.valor}</Text>
-            <Text style={styles.cardTitulo}>{card.titulo}</Text>
           </View>
         ))}
       </View>
@@ -143,6 +151,11 @@ export default function HomeScreen() {
               </Text>
             </View>
           ))}
+
+          <TouchableOpacity style={styles.alertaAcao} onPress={() => router.push("/(tabs)/produtos")} activeOpacity={0.8}>
+            <Text style={styles.alertaAcaoTexto}>Ver todos</Text>
+            <Ionicons name="chevron-forward" size={14} color={Colors.danger.text} />
+          </TouchableOpacity>
         </View>
       )}
 
@@ -208,19 +221,47 @@ const styles = StyleSheet.create({
   headerContent: {
     marginBottom: Spacing[4],
   },
-  header: {
+  headerCard: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 22,
+    padding: Spacing[4],
+    alignItems: "center",
     marginBottom: Spacing[4],
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    elevation: 5,
+  },
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   greeting: {
-    fontSize: Typography.fontSize["2xl"],
+    fontSize: Typography.fontSize["3xl"],
     fontWeight: Typography.fontWeight.bold,
     color: Colors.textPrimary,
-    marginBottom: Spacing[1],
+    lineHeight: 42,
+    textAlign: "center",
+  },
+  greetingEmoji: {
+    marginLeft: Spacing[2],
+    fontSize: Typography.fontSize["2xl"],
   },
   subtitle: {
-    fontSize: Typography.fontSize.base,
+    marginTop: Spacing[1],
+    marginBottom: Spacing[2],
+    fontSize: Typography.fontSize.md,
     color: Colors.textSecondary,
-    textTransform: "capitalize",
+    textAlign: "center",
+  },
+  headerDate: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.neutral[500],
+    textAlign: "center",
   },
   cardsGrid: {
     flexDirection: "row",
@@ -229,19 +270,34 @@ const styles = StyleSheet.create({
   },
   cardResumo: {
     width: "50%",
-    paddingHorizontal: Spacing[1],
     marginBottom: Spacing[2],
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 14,
+    paddingVertical: Spacing[3],
+    paddingHorizontal: Spacing[3],
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: Spacing[2],
+  },
+  cardDash: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.base,
+    marginHorizontal: Spacing[1],
   },
   cardTitulo: {
     color: Colors.textSecondary,
     fontSize: Typography.fontSize.sm,
-    marginTop: Spacing[1],
+    fontWeight: Typography.fontWeight.medium,
+    flexShrink: 1,
   },
   cardValor: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
-    marginTop: Spacing[2],
   },
   alertaBox: {
     borderWidth: 1,
@@ -274,6 +330,18 @@ const styles = StyleSheet.create({
     color: Colors.danger.text,
     fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.semibold,
+  },
+  alertaAcao: {
+    marginTop: Spacing[2],
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  alertaAcaoTexto: {
+    color: Colors.danger.text,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.bold,
+    marginRight: Spacing[1],
   },
   sectionTitle: {
     fontSize: Typography.fontSize.lg,
