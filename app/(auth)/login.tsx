@@ -1,24 +1,40 @@
-import { useState } from "react";
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
+import Input from "@/src/components/Input";
 import LogoProEstoque from "@/src/components/LogoProEstoque";
 import { Colors, Spacing, Typography } from "@/src/constants/theme";
+import { useAuth } from "@/src/contexts/AuthContext";
+import { router } from "expo-router";
+import { useState } from "react";
+import {
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
+  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Atenção", "Preencha e-mail e senha.");
+      return;
+    }
+
+    try {
+      await login(email, password);
+    } catch {
+      Alert.alert("Erro", "Não foi possível entrar. Verifique os dados informados.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -51,14 +67,14 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 autoComplete="password"
                 returnKeyType="done"
-                onSubmitEditing={() => router.replace("/(tabs)")}
+                onSubmitEditing={handleLogin}
               />
 
               <TouchableOpacity onPress={() => router.push("/(auth)/recuperar-senha")} activeOpacity={0.7} style={styles.forgotButton}>
                 <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
               </TouchableOpacity>
 
-              <Button label="Entrar" onPress={() => router.replace("/(tabs)")} fullWidth />
+              <Button label="Entrar" onPress={handleLogin} loading={isLoading} fullWidth />
 
               <View style={styles.bottomRow}>
                 <Text style={styles.caption}>Não tem conta?</Text>

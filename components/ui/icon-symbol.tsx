@@ -6,7 +6,6 @@ import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 const MAPPING = {
   house: 'home',
   settings: 'settings',
-  logout: 'logout',
   'paperplane.fill': 'send',
   'shippingbox.fill': 'inventory-2',
   'chevron.left.forwardslash.chevron.right': 'code',
@@ -30,7 +29,7 @@ export function IconSymbol({
   size?: number;
   color: string | OpaqueColorValue;
   style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
+  weight?: string;
 }) {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 }

@@ -1,11 +1,12 @@
 import { Colors, Spacing, Typography } from "@/src/constants/theme";
+import { useAuth } from "@/src/contexts/AuthContext";
 import {
-  CATEGORIAS_MOCK,
-  PRODUTOS_MOCK,
-  formatarPreco,
-  getProdutosComEstoqueBaixo,
-  getValorTotalEstoque,
-  type Produto,
+    CATEGORIAS_MOCK,
+    PRODUTOS_MOCK,
+    formatarPreco,
+    getProdutosComEstoqueBaixo,
+    getValorTotalEstoque,
+    type Produto,
 } from "@/src/data/mockData";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -64,6 +65,7 @@ function formatarDataHoje() {
 }
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
   const alertas = useMemo(() => getProdutosComEstoqueBaixo(), []);
@@ -116,11 +118,33 @@ export default function HomeScreen() {
     }, 1200);
   }, []);
 
+  const saudacao = useMemo(() => {
+    const horaAtual = new Date().getHours();
+
+    if (horaAtual < 12) {
+      return "Bom dia";
+    }
+
+    if (horaAtual < 18) {
+      return "Boa tarde";
+    }
+
+    return "Boa noite";
+  }, []);
+
+  const primeiroNome = user?.nome?.trim()?.split(" ")[0] || "Usuário";
+  const inicialNome = user?.nome?.trim()?.charAt(0)?.toUpperCase() || "U";
+
   const DashboardHeader = () => (
     <View style={styles.headerContent}>
       <View style={styles.headerCard}>
         <View style={styles.greetingRow}>
-          <Text style={styles.greeting}>Olá, Eduardo</Text>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{inicialNome}</Text>
+          </View>
+          <Text style={styles.greeting}>
+            {saudacao}, {primeiroNome}
+          </Text>
         </View>
 
         <Text style={styles.subtitle}>Visão geral do estoque</Text>
@@ -240,11 +264,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: Colors.primary[600],
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: Spacing[2],
+  },
+  avatarText: {
+    color: Colors.white,
+    fontWeight: Typography.fontWeight.bold,
+    fontSize: Typography.fontSize.md,
+  },
   greeting: {
-    fontSize: Typography.fontSize["3xl"],
+    fontSize: Typography.fontSize["2xl"],
     fontWeight: Typography.fontWeight.bold,
     color: Colors.textPrimary,
-    lineHeight: 42,
+    lineHeight: 36,
     textAlign: "center",
   },
   greetingEmoji: {
