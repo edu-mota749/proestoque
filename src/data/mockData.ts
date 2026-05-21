@@ -16,6 +16,7 @@ export type Produto = {
   preco: number;
   unidade: UnidadeProduto;
   observacao?: string;
+  foto?: string;
   ultimaMovimentacao: string;
 };
 

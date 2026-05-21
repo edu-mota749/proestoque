@@ -91,6 +91,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       preco: data.preco,
       unidade: data.unidade,
       observacao: data.observacao,
+      foto: data.foto || undefined,
       ultimaMovimentacao: new Date().toISOString(),
     };
 
@@ -107,6 +108,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       preco: data.preco,
       unidade: data.unidade,
       observacao: data.observacao,
+      foto: data.foto || undefined,
       ultimaMovimentacao: new Date().toISOString(),
     };
 

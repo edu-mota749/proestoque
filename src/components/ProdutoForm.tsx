@@ -10,19 +10,24 @@ import { router } from "expo-router";
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { z } from "zod";
+import ImagePickerField from "./ImagePickerField";
 
 type ProdutoFormProps = {
   produtoId?: string;
 };
 
-const defaultValues: ProdutoFormData = {
+type ProdutoFormInput = z.input<typeof produtoSchema>;
+
+const defaultValues: ProdutoFormInput = {
   nome: "",
   categoriaId: "",
   quantidade: 0,
   quantidadeMinima: 0,
-  preco: 0,
+  preco: "",
   unidade: "un",
   observacao: "",
+  foto: "",
 };
 
 export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
@@ -36,7 +41,7 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ProdutoFormData>({
+  } = useForm<ProdutoFormInput, unknown, ProdutoFormData>({
     resolver: zodResolver(produtoSchema),
     defaultValues,
     mode: "onTouched",
@@ -55,9 +60,10 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
         categoriaId: produto.categoriaId,
         quantidade: produto.quantidade,
         quantidadeMinima: produto.quantidadeMinima,
-        preco: produto.preco,
+        preco: String(produto.preco).replace(".", ","),
         unidade: produto.unidade,
         observacao: produto.observacao ?? "",
+        foto: produto.foto ?? "",
       });
     }
   }, [getProdutoById, produtoId, reset]);
@@ -106,6 +112,14 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
 
       <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>Informações básicas</Text>
+
+        <Controller
+          control={control}
+          name="foto"
+          render={({ field: { value, onChange } }) => (
+            <ImagePickerField value={value ?? ""} onChange={onChange} />
+          )}
+        />
 
         <Controller
           control={control}
@@ -196,7 +210,7 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
           render={({ field: { value, onChange, onBlur } }) => (
             <Input
               label="Preço (R$) *"
-              value={value === 0 ? "" : String(value)}
+              value={value ?? ""}
               onChangeText={onChange}
               onBlur={onBlur}
               error={errors.preco?.message}

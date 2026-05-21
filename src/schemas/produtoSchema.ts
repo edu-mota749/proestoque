@@ -21,26 +21,20 @@ export const produtoSchema = z.object({
     .int("Deve ser um número inteiro")
     .min(0, "Não pode ser negativa"),
 
-  preco: z.preprocess((valor) => {
-    if (typeof valor === "string") {
-      const normalizado = valor.trim().replace(/\s+/g, "").replace(",", ".");
-
-      if (normalizado === "") {
-        return undefined;
-      }
-
-      return Number(normalizado);
-    }
-
-    return valor;
-  }, z.number({ invalid_type_error: "Informe o preço" }).positive("Preço deve ser maior que zero")),
+  preco: z
+    .string()
+    .trim()
+    .min(1, "Informe o preço")
+    .transform((valor) => Number(valor.replace(/\s+/g, "").replace(",", ".")))
+    .refine((valor) => Number.isFinite(valor) && valor > 0, {
+      message: "Preço deve ser maior que zero",
+    }),
 
   unidade: z.enum(UNIDADES_PRODUTO),
 
-  observacao: z.preprocess(
-    (valor) => (valor === "" ? undefined : valor),
-    z.string().max(200, "Máximo 200 caracteres").optional()
-  ),
+  observacao: z.string().max(200, "Máximo 200 caracteres").optional(),
+
+  foto: z.string().optional(),
 });
 
 export type ProdutoFormData = z.infer<typeof produtoSchema>;

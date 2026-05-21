@@ -5,7 +5,7 @@ import { CATEGORIAS_MOCK, type Produto } from "@/src/data/mockData";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProdutosScreen() {
@@ -36,13 +36,17 @@ export default function ProdutosScreen() {
       <TouchableOpacity style={styles.itemCard} onPress={() => router.push(`/produtos/${item.id}`)} activeOpacity={0.88}>
         <View style={styles.itemHeader}>
           <View style={styles.itemLeft}>
-            <View style={[styles.iconeCategoria, { backgroundColor: `${categoria?.cor ?? Colors.primary[600]}15` }]}>
-              <Ionicons
-                name={(categoria?.icone as keyof typeof Ionicons.glyphMap) ?? "cube-outline"}
-                size={18}
-                color={categoria?.cor ?? Colors.primary[600]}
-              />
-            </View>
+            {item.foto ? (
+              <Image source={{ uri: item.foto }} style={styles.thumbnail} />
+            ) : (
+              <View style={[styles.iconeCategoria, { backgroundColor: `${categoria?.cor ?? Colors.primary[600]}15` }]}>
+                <Ionicons
+                  name={(categoria?.icone as keyof typeof Ionicons.glyphMap) ?? "cube-outline"}
+                  size={18}
+                  color={categoria?.cor ?? Colors.primary[600]}
+                />
+              </View>
+            )}
             <View style={styles.itemTextos}>
               <Text style={styles.itemNome}>{item.nome}</Text>
               <Text style={styles.itemMeta}>
@@ -216,6 +220,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
+  },
+  thumbnail: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   itemTextos: {
     flex: 1,
