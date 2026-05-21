@@ -23,7 +23,7 @@ const STORAGE_KEYS = {
 
 const SESSION_MIN_LOADING_MS = 1300;
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

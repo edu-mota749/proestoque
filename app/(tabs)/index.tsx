@@ -1,11 +1,9 @@
 import { Colors, Spacing, Typography } from "@/src/constants/theme";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useProducts } from "@/src/contexts/ProductsContext";
 import {
     CATEGORIAS_MOCK,
-    PRODUTOS_MOCK,
     formatarPreco,
-    getProdutosComEstoqueBaixo,
-    getValorTotalEstoque,
     type Produto,
 } from "@/src/data/mockData";
 import { Ionicons } from "@expo/vector-icons";
@@ -66,23 +64,31 @@ function formatarDataHoje() {
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { produtos } = useProducts();
   const [refreshing, setRefreshing] = useState(false);
 
-  const alertas = useMemo(() => getProdutosComEstoqueBaixo(), []);
-  const valorTotal = useMemo(() => getValorTotalEstoque(), []);
+  const alertas = useMemo(
+    () => produtos.filter((produto) => produto.quantidade < produto.quantidadeMinima),
+    [produtos]
+  );
+  const valorEmEstoque = useMemo(
+    () => produtos.reduce((total, produto) => total + produto.quantidade * produto.preco, 0),
+    [produtos]
+  );
+  const totalProdutos = produtos.length;
 
   const produtosRecentes = useMemo(() => {
-    return [...PRODUTOS_MOCK].sort(
+    return [...produtos].sort(
       (a, b) => new Date(b.ultimaMovimentacao).getTime() - new Date(a.ultimaMovimentacao).getTime()
     );
-  }, []);
+  }, [produtos]);
 
   const cardsResumo: CardResumo[] = useMemo(
     () => [
       {
         id: "total",
         titulo: "Total",
-        valor: PRODUTOS_MOCK.length,
+        valor: totalProdutos,
         icone: "cube-outline",
         corIcone: Colors.primary[600],
       },
@@ -103,12 +109,12 @@ export default function HomeScreen() {
       {
         id: "valor",
         titulo: "Valor",
-        valor: formatarPreco(valorTotal),
+        valor: formatarPreco(valorEmEstoque),
         icone: "cash-outline",
         corIcone: Colors.success.text,
       },
     ],
-    [alertas.length, valorTotal]
+    [alertas.length, totalProdutos, valorEmEstoque]
   );
 
   const onRefresh = useCallback(() => {
@@ -176,7 +182,7 @@ export default function HomeScreen() {
             </View>
           ))}
 
-          <TouchableOpacity style={styles.alertaAcao} onPress={() => router.push("/(tabs)/produtos")} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.alertaAcao} onPress={() => router.push("/produtos")} activeOpacity={0.8}>
             <Text style={styles.alertaAcaoTexto}>Ver todos</Text>
             <Ionicons name="chevron-forward" size={14} color={Colors.danger.text} />
           </TouchableOpacity>

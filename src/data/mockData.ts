@@ -1,3 +1,5 @@
+import type { UnidadeProduto } from "@/src/schemas/produtoSchema";
+
 export type Categoria = {
   id: string;
   nome: string;
@@ -12,7 +14,8 @@ export type Produto = {
   quantidade: number;
   quantidadeMinima: number;
   preco: number;
-  unidade: string;
+  unidade: UnidadeProduto;
+  observacao?: string;
   ultimaMovimentacao: string;
 };
 
@@ -31,6 +34,7 @@ export const CATEGORIAS_MOCK: Categoria[] = [
   { id: "cat_3", nome: "Limpeza", icone: "sparkles-outline", cor: "#0284c7" },
   { id: "cat_4", nome: "Eletrônicos", icone: "hardware-chip-outline", cor: "#d97706" },
   { id: "cat_5", nome: "Papelaria", icone: "document-outline", cor: "#db2777" },
+  { id: "cat_6", nome: "Outros", icone: "pricetag-outline", cor: "#6b7280" },
 ];
 
 export const PRODUTOS_MOCK: Produto[] = [
@@ -176,11 +180,11 @@ export const MOVIMENTACOES_MOCK: Movimentacao[] = [
   },
 ];
 
-export const getProdutosComEstoqueBaixo = () =>
-  PRODUTOS_MOCK.filter((produto) => produto.quantidade < produto.quantidadeMinima);
+export const getProdutosComEstoqueBaixo = (produtos: Produto[] = PRODUTOS_MOCK) =>
+  produtos.filter((produto) => produto.quantidade < produto.quantidadeMinima);
 
-export const getValorTotalEstoque = () =>
-  PRODUTOS_MOCK.reduce((acumulador, produto) => acumulador + produto.quantidade * produto.preco, 0);
+export const getValorTotalEstoque = (produtos: Produto[] = PRODUTOS_MOCK) =>
+  produtos.reduce((acumulador, produto) => acumulador + produto.quantidade * produto.preco, 0);
 
 export const formatarPreco = (valor: number) =>
   valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

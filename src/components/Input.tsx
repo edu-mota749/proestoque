@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { Colors, Radius, Spacing, Typography } from "@/src/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, TextInput, TextInputProps, View, Text, Pressable } from "react-native";
-import { Colors, Typography, Spacing, Radius } from "@/src/constants/theme";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -22,6 +22,14 @@ export default function Input({
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const hasError = !!error;
+  const {
+    onFocus,
+    onBlur,
+    value,
+    onChangeText,
+    style: inputStyle,
+    ...textInputProps
+  } = rest;
 
   return (
     <View style={styles.wrapper}>
@@ -38,12 +46,20 @@ export default function Input({
         ) : null}
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, inputStyle]}
+          value={value}
           placeholderTextColor={Colors.neutral[400]}
           secureTextEntry={isPassword && !showPassword}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          {...rest}
+          onChangeText={onChangeText}
+          {...textInputProps}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
         />
 
         {isPassword ? (

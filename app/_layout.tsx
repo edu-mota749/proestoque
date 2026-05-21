@@ -1,10 +1,9 @@
-import LogoProEstoque from "@/src/components/LogoProEstoque";
-import { Colors } from "@/src/constants/theme";
+import SplashScreen from "@/src/components/SplashScreen";
 import { AuthProvider, useAuth } from "@/src/contexts/AuthContext";
+import { ProductsProvider } from "@/src/contexts/ProductsContext";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 export const unstable_settings = {
@@ -15,9 +14,18 @@ function NavigationGuard() {
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const [minimumSplashElapsed, setMinimumSplashElapsed] = useState(false);
 
   useEffect(() => {
-    if (isLoading) {
+    const timeout = setTimeout(() => {
+      setMinimumSplashElapsed(true);
+    }, 1500);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading || !minimumSplashElapsed) {
       return;
     }
 
@@ -31,44 +39,27 @@ function NavigationGuard() {
     if (isAuthenticated && estaNoGrupoAuth) {
       router.replace("/(tabs)");
     }
-  }, [isAuthenticated, isLoading, router, segments]);
+  }, [isAuthenticated, isLoading, minimumSplashElapsed, router, segments]);
 
-  if (!isLoading) {
-    return null;
+  if (isLoading || !minimumSplashElapsed) {
+    return <SplashScreen />;
   }
 
-  return (
-    <View style={styles.loadingOverlay}>
-      <LogoProEstoque size="md" />
-      <ActivityIndicator size="large" color={Colors.primary[600]} />
-      <Text style={styles.loadingText}>Verificando sessão...</Text>
-    </View>
-  );
+  return null;
 }
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      <NavigationGuard />
-      <StatusBar style="auto" />
+      <ProductsProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+        <NavigationGuard />
+        <StatusBar style="auto" />
+      </ProductsProvider>
     </AuthProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.background,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 12,
-    color: Colors.textSecondary,
-    fontSize: 14,
-  },
-});
