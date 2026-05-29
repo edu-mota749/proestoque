@@ -1,19 +1,21 @@
+import Button from "@/src/components/Button";
+import Input from "@/src/components/Input";
+import LogoProEstoque from "@/src/components/LogoProEstoque";
+import { Colors, Spacing, Typography } from "@/src/constants/theme";
+import { useAuth } from "@/src/contexts/AuthContext";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
-import Input from "@/src/components/Input";
-import Button from "@/src/components/Button";
-import LogoProEstoque from "@/src/components/LogoProEstoque";
-import { Colors, Typography, Spacing } from "@/src/constants/theme";
 
 type FormFields = {
   nome: string;
@@ -23,9 +25,9 @@ type FormFields = {
 };
 
 export default function CadastroScreen() {
+  const { registrar, isLoading } = useAuth();
   const [form, setForm] = useState<FormFields>({ nome: "", email: "", senha: "", confirmarSenha: "" });
   const [errors, setErrors] = useState<Partial<FormFields>>({});
-  const [loading, setLoading] = useState(false);
 
   const updateField = (field: keyof FormFields, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -46,13 +48,16 @@ export default function CadastroScreen() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     if (!validate()) return;
 
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+    try {
+      await registrar(form.nome, form.email, form.senha);
+      router.replace("/(tabs)");
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : "Nao foi possivel criar conta";
+      Alert.alert("Erro", mensagem);
+    }
   };
 
   return (
@@ -103,7 +108,7 @@ export default function CadastroScreen() {
               returnKeyType="done"
               onSubmitEditing={handleCreateAccount}
             />
-            <Button label="Criar Conta" onPress={handleCreateAccount} loading={loading} fullWidth />
+            <Button label="Criar Conta" onPress={handleCreateAccount} loading={isLoading} fullWidth />
           </View>
 
           <View style={styles.bottomRow}>
