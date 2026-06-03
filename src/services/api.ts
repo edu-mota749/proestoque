@@ -1,12 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
+type UnauthorizedHandler = (() => void | Promise<void>) | null;
+
+let unauthorizedHandler: UnauthorizedHandler = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler) {
+  unauthorizedHandler = handler;
+}
+
 const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === "android"
-    ? "http://10.0.2.2:3333/api"
-    : "http://localhost:3333/api");
+  (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
+  (Platform.OS === "android" ? "http://192.168.1.2:3333/api" : "http://192.168.1.2:3333/api");
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -28,11 +35,21 @@ api.interceptors.request.use(async (config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Futuro: tratar expiracao de sessao globalmente.
+      await AsyncStorage.multiRemove(["@proestoque:token", "@proestoque:user"]);
+
+      if (unauthorizedHandler) {
+        await unauthorizedHandler();
+      }
     }
 
-    return Promise.reject(error);
+    const mensagem =
+      error.response?.data?.erro ??
+      (error.code === "ECONNABORTED"
+        ? "Tempo de conexão esgotado"
+        : error.message || "Erro de conexão");
+
+    return Promise.reject(new Error(mensagem));
   }
 );

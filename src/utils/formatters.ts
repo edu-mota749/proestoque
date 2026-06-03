@@ -1,0 +1,9 @@
+export const formatarPreco = (valor: number): string =>
+  valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export const formatarData = (valorIso: string): string =>
+  new Date(valorIso).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });

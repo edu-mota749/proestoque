@@ -32,8 +32,9 @@ export default function LoginScreen() {
     try {
       await login(email, password);
       router.replace("/(tabs)");
-    } catch {
-      Alert.alert("Erro", "Não foi possível entrar. Verifique os dados informados.");
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : "Não foi possível entrar. Verifique os dados informados.";
+      Alert.alert("Erro", mensagem);
     }
   };
 

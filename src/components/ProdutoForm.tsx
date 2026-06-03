@@ -1,16 +1,16 @@
 import Button from "@/src/components/Button";
 import Input from "@/src/components/Input";
 import { Colors, Radius, Spacing, Typography } from "@/src/constants/theme";
-import { useProducts } from "@/src/contexts/ProductsContext";
-import { CATEGORIAS_MOCK } from "@/src/data/mockData";
-import { produtoSchema, UNIDADES_PRODUTO, type ProdutoFormData } from "@/src/schemas/produtoSchema";
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { z } from "zod";
+import { useProducts } from "../contexts/ProductsContext";
+import { useCategorias, type Categoria } from "../hooks/useCategorias";
+import { produtoSchema, UNIDADES_PRODUTO, type ProdutoFormData } from "../schemas/produtoSchema";
 import ImagePickerField from "./ImagePickerField";
 
 type ProdutoFormProps = {
@@ -33,6 +33,7 @@ const defaultValues: ProdutoFormInput = {
 export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
   const modoEdicao = !!produtoId;
   const { adicionarProduto, editarProduto, deletarProduto, getProdutoById } = useProducts();
+  const { categorias, isLoading: isLoadingCategorias } = useCategorias();
 
   const {
     control,
@@ -68,17 +69,21 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
     }
   }, [getProdutoById, produtoId, reset]);
 
-  const categorias = useMemo(() => CATEGORIAS_MOCK, []);
   const unidadeSelecionada = watch("unidade");
 
   const onSubmit = async (data: ProdutoFormData) => {
-    if (modoEdicao && produtoId) {
-      await editarProduto(produtoId, data);
-    } else {
-      await adicionarProduto(data);
-    }
+    try {
+      if (modoEdicao && produtoId) {
+        await editarProduto(produtoId, data);
+      } else {
+        await adicionarProduto(data);
+      }
 
-    router.back();
+      router.back();
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : "Nao foi possivel salvar o produto.";
+      Alert.alert("Erro ao salvar", mensagem);
+    }
   };
 
   const handleExcluir = () => {
@@ -92,8 +97,13 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
         text: "Excluir",
         style: "destructive",
         onPress: async () => {
-          await deletarProduto(produtoId);
-          router.back();
+          try {
+            await deletarProduto(produtoId);
+            router.back();
+          } catch (error) {
+            const mensagem = error instanceof Error ? error.message : "Nao foi possivel excluir o produto.";
+            Alert.alert("Erro ao excluir", mensagem);
+          }
         },
       },
     ]);
@@ -139,12 +149,13 @@ export default function ProdutoForm({ produtoId }: ProdutoFormProps) {
         />
 
         <Text style={styles.fieldLabel}>Categoria *</Text>
+        {isLoadingCategorias ? <Text style={styles.loadingText}>Carregando categorias...</Text> : null}
         <Controller
           control={control}
           name="categoriaId"
           render={({ field: { value, onChange } }) => (
             <View style={styles.chipsWrap}>
-              {categorias.map((categoria) => (
+              {categorias.map((categoria: Categoria) => (
                 <TouchableOpacity
                   key={categoria.id}
                   style={[
@@ -389,5 +400,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing[3],
     fontSize: Typography.fontSize.sm,
     color: Colors.danger.text,
+  },
+  loadingText: {
+    marginBottom: Spacing[2],
+    fontSize: Typography.fontSize.sm,
+    color: Colors.textSecondary,
   },
 });

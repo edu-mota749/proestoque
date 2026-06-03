@@ -1,20 +1,23 @@
 import Input from "@/src/components/Input";
 import { Colors, Spacing, Typography } from "@/src/constants/theme";
-import { useProducts } from "@/src/contexts/ProductsContext";
-import { CATEGORIAS_MOCK, type Produto } from "@/src/data/mockData";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ErrorView } from "../../../src/components/ErrorView";
+import { LoadingView } from "../../../src/components/LoadingView";
+import { useProducts, type Produto } from "../../../src/contexts/ProductsContext";
+import { useCategorias, type Categoria } from "../../../src/hooks/useCategorias";
 
 export default function ProdutosScreen() {
-  const { produtos } = useProducts();
+  const { produtos, isLoading, error, carregarProdutos } = useProducts();
+  const { categorias } = useCategorias();
   const [busca, setBusca] = useState("");
   const [categoriaAtiva, setCategoriaAtiva] = useState<string | null>(null);
   const filtrosCategoria = useMemo(
-    () => [{ id: "todos", nome: "Todos", icone: "apps-outline", cor: Colors.primary[600] }, ...CATEGORIAS_MOCK],
-    []
+    () => [{ id: "todos", nome: "Todos", icone: "apps-outline", cor: Colors.primary[600] }, ...categorias],
+    [categorias]
   );
 
   const produtosFiltrados = useMemo(() => {
@@ -28,7 +31,7 @@ export default function ProdutosScreen() {
   }, [produtos, busca, categoriaAtiva]);
 
   const renderProduto = ({ item }: { item: Produto }) => {
-    const categoria = CATEGORIAS_MOCK.find((cat) => cat.id === item.categoriaId);
+    const categoria = categorias.find((cat: Categoria) => cat.id === item.categoriaId);
     const emAlerta = item.quantidade < item.quantidadeMinima;
     const semEstoque = item.quantidade === 0;
 
@@ -65,6 +68,14 @@ export default function ProdutosScreen() {
     );
   };
 
+  if (isLoading && produtos.length === 0) {
+    return <LoadingView mensagem="Carregando produtos..." />;
+  }
+
+  if (error && produtos.length === 0) {
+    return <ErrorView mensagem={error} onRetry={carregarProdutos} />;
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
       <FlatList
@@ -88,7 +99,7 @@ export default function ProdutosScreen() {
             />
 
             <View style={styles.chips}>
-              {filtrosCategoria.map((categoria) => {
+              {filtrosCategoria.map((categoria: Categoria | { id: string; nome: string; icone: string; cor: string }) => {
                 const ativo = categoria.id === "todos" ? categoriaAtiva === null : categoriaAtiva === categoria.id;
                 return (
                   <TouchableOpacity
@@ -126,6 +137,7 @@ export default function ProdutosScreen() {
             </TouchableOpacity>
           </View>
         }
+        refreshControl={<RefreshControl refreshing={isLoading && produtos.length > 0} onRefresh={carregarProdutos} tintColor={Colors.primary[600]} />}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       />

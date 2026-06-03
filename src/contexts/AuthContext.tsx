@@ -1,4 +1,4 @@
-import { api } from "@/src/services/api";
+import { api, setUnauthorizedHandler } from "@/src/services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
@@ -32,6 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const limparSessaoLocal = useCallback(() => {
+    setToken(null);
+    setUser(null);
+  }, []);
+
   useEffect(() => {
     async function carregarSessao() {
       try {
@@ -59,36 +64,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     carregarSessao();
   }, []);
 
+  useEffect(() => {
+    setUnauthorizedHandler(limparSessaoLocal);
+
+    return () => setUnauthorizedHandler(null);
+  }, [limparSessaoLocal]);
+
+  const salvarSessao = useCallback(async (tokenNovo: string, usuarioNovo: User) => {
+    await AsyncStorage.multiSet([
+      [STORAGE_KEYS.TOKEN, tokenNovo],
+      [STORAGE_KEYS.USER, JSON.stringify(usuarioNovo)],
+    ]);
+
+    setToken(tokenNovo);
+    setUser(usuarioNovo);
+  }, []);
+
   const login = useCallback(async (email: string, senha: string) => {
     setIsLoading(true);
 
     try {
-      if (!email.trim() || !senha.trim()) {
-        throw new Error("Preencha e-mail e senha.");
-      }
-
       const response = await api.post("/auth/login", { email, senha });
       const { usuario, token } = response.data as { usuario: User; token: string };
 
-      await AsyncStorage.multiSet([
-        [STORAGE_KEYS.TOKEN, token],
-        [STORAGE_KEYS.USER, JSON.stringify(usuario)],
-      ]);
-
-      setToken(token);
-      setUser(usuario);
+      await salvarSessao(token, usuario);
     } catch (error) {
-      const mensagem =
-        error instanceof Error && "response" in error
-          ? ((error as { response?: { data?: { erro?: string } } }).response?.data?.erro ??
-            "Erro ao fazer login")
-          : "Erro ao fazer login";
-
-      throw new Error(mensagem);
+      throw error instanceof Error ? error : new Error("Erro ao fazer login");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [salvarSessao]);
 
   const registrar = useCallback(async (nome: string, email: string, senha: string) => {
     setIsLoading(true);
@@ -97,25 +102,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.post("/auth/registro", { nome, email, senha });
       const { usuario, token } = response.data as { usuario: User; token: string };
 
-      await AsyncStorage.multiSet([
-        [STORAGE_KEYS.TOKEN, token],
-        [STORAGE_KEYS.USER, JSON.stringify(usuario)],
-      ]);
-
-      setToken(token);
-      setUser(usuario);
+      await salvarSessao(token, usuario);
     } catch (error) {
-      const mensagem =
-        error instanceof Error && "response" in error
-          ? ((error as { response?: { data?: { erro?: string } } }).response?.data?.erro ??
-            "Erro ao criar conta")
-          : "Erro ao criar conta";
-
-      throw new Error(mensagem);
+      throw error instanceof Error ? error : new Error("Erro ao criar conta");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [salvarSessao]);
 
   const logout = useCallback(async () => {
     try {
@@ -123,10 +116,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Erro ao remover dados de armazenamento:", error);
     } finally {
-      setToken(null);
-      setUser(null);
+      limparSessaoLocal();
     }
-  }, []);
+  }, [limparSessaoLocal]);
 
   return (
     <AuthContext.Provider

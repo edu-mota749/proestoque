@@ -53,7 +53,6 @@ export default function CadastroScreen() {
 
     try {
       await registrar(form.nome, form.email, form.senha);
-      router.replace("/(tabs)");
     } catch (error) {
       const mensagem = error instanceof Error ? error.message : "Nao foi possivel criar conta";
       Alert.alert("Erro", mensagem);
